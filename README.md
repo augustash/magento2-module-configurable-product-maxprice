@@ -1,4 +1,4 @@
-# Augustash_ConfigurablePriceMaxPrice
+# Augustash_ConfigurableProduct
 
 ## Overview:
 
@@ -13,12 +13,12 @@ In your project's `composer.json` file, add the following lines to the `require`
 ```js
 {
     "require": {
-        "augustash/module-configurablepricemaxprice": "dev-master"
+        "augustash/module-configurable-product-maxprice": "dev-master"
     },
     "repositories": {
-        "augustash-configurablepricemaxprice": {
+        "augustash-configurable-product-maxprice": {
             "type": "vcs",
-            "url": "https://github.com/augustash/magento2-module-configurableprice-max-price.git"
+            "url": "https://github.com/augustash/magento2-module-configurable-product-maxprice.git"
         }
     }
 }
