@@ -1,0 +1,22 @@
+{
+    "name": "augustash/module-configurable-product-maxprice",
+    "license": "OSL-3.0",
+    "type": "magento2-module",
+    "description": "Changes Magento 2 default convention of showing the lowest price for a configurable product (before being configured) to show the highest possible price and still allow the displayed price to change as the product is configured.",
+    "require": {
+    },
+    "authors":[
+        {
+            "name":"Josh Johnson",
+            "email":"josh@augustash.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Augustash\\ConfigurableProduct\\": ""
+        }
+    }
+}
