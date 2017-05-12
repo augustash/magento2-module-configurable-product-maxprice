@@ -2,8 +2,6 @@
 
 namespace Augustash\ConfigurableProduct\Pricing;
 
-use Magento\Framework\Logger\Monolog as MonologLogger;
-
 /**
  * Changes Magento 2 default convention of showing the lowest price
  * for a configurable product (before being configured) to show the
@@ -13,25 +11,25 @@ use Magento\Framework\Logger\Monolog as MonologLogger;
  * @see http://magento.stackexchange.com/a/136065
  */
 
-
 class MaxConfigurablePrice
 {
-    protected $logger;
     protected $productRepository;
     protected $productFactory;
     protected $dataObjectHelper;
+    protected $storeManager;
+    protected $logFilePath = '/var/log/aai_debug.log';
 
     public function __construct(
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         \Magento\Catalog\Api\Data\ProductInterfaceFactory $productFactory,
         \Magento\Framework\Api\DataObjectHelper $dataObjectHelper,
-        MonologLogger $logger
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     )
     {
         $this->productFactory = $productFactory;
         $this->productRepository = $productRepository;
         $this->dataObjectHelper = $dataObjectHelper;
-        $this->logger = $logger;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -80,11 +78,7 @@ class MaxConfigurablePrice
             return [];
         }
 
-        /**
-         * @todo get rid of this magic number BS
-         * @var integer
-         */
-        $storeId = 1; //$this->_storeManager->getStore()->getId();
+        $storeId = $this->getCurrentStoreId();
         $productTypeInstance = $product->getTypeInstance();
         $productTypeInstance->setStoreFilter($storeId, $product);
         $childrenList = [];
@@ -126,29 +120,17 @@ class MaxConfigurablePrice
         return $childConfigData;
     }
 
-    protected function log($message, $methodName = null, $lineNumber = null)
+    public function getCurrentStoreId()
     {
-        switch (true) {
-            case (!empty($methodName) && !empty($lineNumber)):
-                $this->logger->addDebug('FROM ' . __CLASS__ . '::' . $methodName . ' AT LINE ' . $lineNumber);
-                $this->logger->addDebug($message);
-                break;
+        return $this->storeManager->getStore()->getStoreId();
+    }
 
-            case (empty($methodName) && !empty($lineNumber)):
-                $this->logger->addDebug('FROM ' . __CLASS__ . ' AT LINE ' . $lineNumber);
-                $this->logger->addDebug($message);
-                break;
-
-            case (!empty($methodName) && empty($lineNumber)):
-                $this->logger->addDebug('FROM ' . __CLASS__ . '::' . $methodName);
-                $this->logger->addDebug($message);
-                break;
-
-            default:
-                $this->logger->addDebug('FROM ' . __CLASS__);
-                $this->logger->addDebug($message);
-                break;
-        }
+    public function log($info)
+    {
+        $writer = new \Zend\Log\Writer\Stream(BP . $this->logFilePath);
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        $logger->info($info);
     }
 
  }
