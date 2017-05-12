@@ -49,10 +49,63 @@ class MaxConfigurablePrice
         //get parent product id
         $parentId = $product['entity_id'];
         $childObj = $this->getChildProductObj($parentId);
-        foreach($childObj as $childs){
-            $productPrice = $childs->getPrice();
+        foreach($childObj as $childProduct){
+            $productPrice = $childProduct->getPrice();
+            $specialPrice = $childProduct->getData('special_price');
+
             $price = $price ? max($price, $productPrice) : $productPrice;
+
+            // if the product with the highest price is also
+            // the product that has a special price make sure
+            // to display the special price (assuming it's valid)
+            if ($price == $productPrice && isset($specialPrice)) {
+                $now = date('Y-m-d H:i:s', time());
+                $specialFromDate = $childProduct->getData('special_from_date');
+                $specialToDate = $childProduct->getData('special_to_date');
+
+                $this->log('FROM ' . __CLASS__ . '::' . __FUNCTION__ . ' AT LINE ' . __LINE__);
+                $this->log('$productPrice: ' . var_export($productPrice, true));
+                $this->log('$specialPrice: ' . var_export($specialPrice, true));
+                $this->log('$specialFromDate: ' . var_export($specialFromDate, true));
+                $this->log('$specialToDate: ' . var_export($specialToDate, true));
+                $this->log('$now: ' . var_export($now, true));
+
+                // $this->log('child product debug: ' . print_r($childProduct->debug(), true));
+
+
+                switch (true) {
+                    case (isset($specialFromDate) && isset($specialToDate)):
+                        if (($now > $specialFromDate) && ($now < $specialToDate)) {
+                            $price = $specialPrice;
+                        }
+                        break;
+
+                    case (isset($specialFromDate) && !isset($specialToDate)):
+                        if ($now > $specialFromDate) {
+                            $price = $specialPrice;
+                        }
+                        break;
+
+                    case (!isset($specialFromDate) && isset($specialToDate)):
+                        if ($now < $specialToDate) {
+                            $price = $specialPrice;
+                        }
+                        break;
+
+                    case (!isset($specialFromDate) && !isset($specialToDate)):
+                        $price = $specialPrice;
+                        break;
+
+                    default:
+                        // do nothing...leave $price as it is
+                        break;
+                }
+            }
         }
+
+        $this->log('FROM ' . __CLASS__ . '::' . __FUNCTION__ . ' AT LINE ' . __LINE__);
+        $this->log('returned $price: ' . var_export($price, true));
+
         return $price;
     }
 
